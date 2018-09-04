@@ -7,6 +7,8 @@ public class Percolation {
     private int size = 0;
     private int numberOfOpenSites = 0;
     private boolean openMarker[];
+    private int topElementIndex;
+    private int bottomElementIndex;
 
     public Percolation(int n)                // create n-by-n grid, with all sites blocked
     {
@@ -15,17 +17,11 @@ public class Percolation {
         }
         this.size = n;
         final int gridSize = this.size * this.size;
-        final int extendedGridSize = gridSize + 2 * size;
-        this.weightedQuickUnionUF = new WeightedQuickUnionUF(extendedGridSize + 2);
-        this.openMarker = new boolean[extendedGridSize];
-        final int topElementIndex = extendedGridSize;
-        final int bottomElementIndex = extendedGridSize + 1;
-        for (int i = 0; i < n; i++) {
-            // connect upper element to the first row
-            weightedQuickUnionUF.union(topElementIndex, i);
-            // connect lower element
-            weightedQuickUnionUF.union(bottomElementIndex, extendedGridSize - i - 1);
-        }
+        this.openMarker = new boolean[gridSize];
+
+        this.weightedQuickUnionUF = new WeightedQuickUnionUF(gridSize + 2);
+        this.topElementIndex = gridSize;
+        this.bottomElementIndex = gridSize + 1;
     }
 
     public void open(int row, int col) {
@@ -36,15 +32,29 @@ public class Percolation {
         int elementIndex = getElementIndex(row, col);
 
         if (openMarker[elementIndex] == false) {
-            if (col > 1) {
-                this.weightedQuickUnionUF.union(elementIndex, elementIndex - 1);
+            final int top = elementIndex - this.size;
+            final int bottom = elementIndex + this.size;
+            final int left = elementIndex - 1;
+            final int right = elementIndex + 1;
+
+            if (col > 1 && isOpen(row, col - 1)) {
+                this.weightedQuickUnionUF.union(elementIndex, left);
             }
-            if (col < this.size) {
-                this.weightedQuickUnionUF.union(elementIndex, elementIndex + 1);
+            if (col < this.size && isOpen(row, col + 1)) {
+                this.weightedQuickUnionUF.union(elementIndex, right);
             }
 
-            this.weightedQuickUnionUF.union(elementIndex, elementIndex - this.size);
-            this.weightedQuickUnionUF.union(elementIndex, elementIndex + this.size);
+            if (row == 1) {
+                this.weightedQuickUnionUF.union(elementIndex, topElementIndex);
+            }
+            if (row > 1 && isOpen(row - 1, col)) {
+                this.weightedQuickUnionUF.union(elementIndex, top);
+            }
+            if (row == this.size) {
+                this.weightedQuickUnionUF.union(elementIndex, bottomElementIndex);
+            }
+            if (row < this.size)
+                this.weightedQuickUnionUF.union(elementIndex, bottom);
 
             this.openMarker[elementIndex] = true;
             this.numberOfOpenSites++;
@@ -53,7 +63,7 @@ public class Percolation {
     }    // open site (row, col) if it is not open already
 
     private int getElementIndex(int row, int col) {
-        return row * this.size + col - 1;
+        return (row - 1) * this.size + col - 1;
     }
 
     public boolean isOpen(int row, int col) {
@@ -75,8 +85,7 @@ public class Percolation {
     }       // number of open sites
 
     public boolean percolates() {
-        final int gridSize = this.size * this.size;
-        return this.weightedQuickUnionUF.find(gridSize) == this.weightedQuickUnionUF.find(gridSize + 1);
+        return this.weightedQuickUnionUF.find(topElementIndex) == this.weightedQuickUnionUF.find(bottomElementIndex);
     }              // does the system percolate?
 
 }

@@ -4,14 +4,16 @@ import edu.princeton.cs.algs4.StdStats;
 import edu.princeton.cs.algs4.WeightedQuickUnionUF;
 
 public class PercolationStats {
-    private int thresholds[];
+    int size;
+    private double thresholds[];
 
     public PercolationStats(int n, int trials)    // perform trials independent experiments on an n-by-n grid
     {
         if (n <= 0 || trials <= 0) {
             throw new IllegalArgumentException();
         }
-        this.thresholds = new int[trials];
+        this.size = n;
+        this.thresholds = new double[trials];
         for (int i = 0; i < trials; i++) {
             final Percolation percolation = new Percolation(n);
             thresholds[i] = 0;
@@ -20,8 +22,8 @@ public class PercolationStats {
                 final int col = StdRandom.uniform(n) + 1;
                 final int row = StdRandom.uniform(n) + 1;
                 percolation.open(row, col);
-                thresholds[i]++;
             }
+            thresholds[i] = ((double) percolation.numberOfOpenSites()) / (size * size);
         }
     }
 
@@ -42,11 +44,11 @@ public class PercolationStats {
 
     public double confidenceLo()                  // low  endpoint of 95% confidence interval
     {
-        return 0;
+        return (mean() - 1.96 * stddev() / this.size);
     }
 
     public double confidenceHi()                  // high endpoint of 95% confidence interval
     {
-        return 0;
+        return (mean() + 1.96 * stddev() / this.size);
     }
 }

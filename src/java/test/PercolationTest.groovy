@@ -90,7 +90,7 @@ class PercolationTest extends spock.lang.Specification {
         given:
         def p3 = new Percolation(2);
         p3.open(1, 1)
-        p3.open(1, 2)
+        p3.open(2, 1)
         expect:
         p3.percolates() == true
         p3.numberOfOpenSites() == 2
@@ -101,6 +101,18 @@ class PercolationTest extends spock.lang.Specification {
         def p3 = new Percolation(2);
         p3.open(1, 1)
         p3.open(2, 2)
+        expect:
+        p3.percolates() == false
+        p3.numberOfOpenSites() == 2
+    }
+
+    def "FourPercolationDiagonal"() {
+        given:
+        def p3 = new Percolation(4);
+        p3.open(1, 1)
+        p3.open(2, 1)
+        p3.open(2, 1)
+        p3.open(2, 1)
         expect:
         p3.percolates() == false
         p3.numberOfOpenSites() == 2
